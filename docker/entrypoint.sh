@@ -15,6 +15,8 @@ php-fpm -D
 
 echo "Lancement des migrations..."
 # On attend un peu que la DB soit prête si nécessaire
+php artisan config:clear
+php artisan migrate --force
 php artisan migrate --force
 
 echo "Démarrage de Nginx..."
