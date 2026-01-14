@@ -1,14 +1,13 @@
-// resources/js/services/api.js
 import axios from 'axios'
 
 const api = axios.create({
-  // Utilise la variable d'environnement définie dans ton .env
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  // Si VITE_API_BASE_URL n'est pas trouvé ou est erroné,
+  // on utilise '/api' qui fonctionnera toujours sur Render
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  // Permet d'envoyer les cookies de session (nécessaire pour Sanctum)
   withCredentials: true,
 })
 
