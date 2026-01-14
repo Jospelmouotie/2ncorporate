@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue'
-import { useCategoryStore } from '@/Stores/categoryStore'
+import { useCategoryStore } from '@/stores/categoryStore.js'
 import { Package, Grid, Zap, Tv, ChevronRight, LayoutDashboard, Settings } from 'lucide-vue-next'
 import SidebarLink from './SidebarLink.vue'
 
