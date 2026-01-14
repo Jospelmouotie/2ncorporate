@@ -159,7 +159,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import { Heart, ShoppingCart, Truck, ShieldCheck, Star, Lock } from 'lucide-vue-next'
-import ReviewSection from '@/components/reviews/ReviewSection.vue'
+import ReviewSection from '@/Components/reviews/ReviewSection.vue'
 
 const route = useRoute()
 const router = useRouter()
