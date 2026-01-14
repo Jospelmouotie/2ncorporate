@@ -1,31 +1,31 @@
-// 1. IL MANQUAIT CETTE LIGNE :
 import { defineConfig } from 'vite';
-
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
-import VueDevTools from 'vite-plugin-vue-devtools';
+// import VueDevTools from 'vite-plugin-vue-devtools'; // Optionnel en prod
+import path from 'path'; // Ajoute cet import pour gérer les chemins
 
 export default defineConfig({
     plugins: [
-        VueDevTools(),
+        // VueDevTools(),
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
         }),
         tailwindcss(),
-        vue(),
+        vue({
+            template: {
+                transformAssetUrls: {
+                    base: null,
+                    includeAbsolute: false,
+                },
+            },
+        }),
     ],
-    server: {
-        host: 'localhost',
-        port: 5173,
-        hmr: {
-            host: 'localhost',
-        },
-    },
     resolve: {
         alias: {
-            '@': '/resources/js',
+            // Utilise path.resolve pour éviter les erreurs de chemin sur Render/Docker
+            '@': path.resolve(__dirname, './resources/js'),
         },
     },
 });

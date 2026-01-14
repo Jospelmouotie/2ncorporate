@@ -1,16 +1,21 @@
 #!/bin/sh
 
-# Démarrer PHP-FPM en arrière-plan
+# Création des dossiers nécessaires pour éviter les erreurs de permissions
+mkdir -p /var/www/storage/logs
+mkdir -p /var/www/storage/framework/sessions
+mkdir -p /var/www/storage/framework/views
+mkdir -p /var/www/storage/framework/cache
+
+# Ajustement des permissions au démarrage
+chown -R www-data:www-data /var/www/storage
+chmod -R 775 /var/www/storage
+
+# Démarrer PHP-FPM
 php-fpm -D
 
-# ATTENTION : On ajoute la ligne de migration ici
-# Elle s'exécutera automatiquement à chaque déploiement
 echo "Lancement des migrations..."
+# On attend un peu que la DB soit prête si nécessaire
 php artisan migrate --force
 
-# Optionnel : Si tu veux aussi ajouter tes produits de test (si tu as des Seeders)
-# php artisan db:seed --force
-
-# Lancer Nginx au premier plan
 echo "Démarrage de Nginx..."
 nginx -g "daemon off;"
