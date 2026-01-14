@@ -13,7 +13,8 @@ import Register from '@/Pages/Register.vue'
 import NotFound from '@/Pages/NotFound.vue'
 
 // Pages admin
-import Dashboard from '../Components/Admin/Dashboard.vue'
+// Remplace tes imports Admin (lignes 16 à 20) par ceux-ci :
+import Dashboard from '@/Components/Admin/Dashboard.vue'
 import ProductList from '@/Components/Admin/Products/ProductList.vue'
 import CategoryList from '@/Components/Admin/Categories/CategoryList.vue'
 import PromotionDashboard from '@/Components/Admin/Promotions/PromotionDashboard.vue'
