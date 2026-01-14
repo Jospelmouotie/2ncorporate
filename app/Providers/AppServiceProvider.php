@@ -17,14 +17,13 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        \Illuminate\Pagination\Paginator::useBootstrapFive();
+     */public function boot(): void
+{
+    \Illuminate\Pagination\Paginator::useBootstrapFive();
 
-        // On force le HTTPS si on est en production sur Render
-        if (config('app.env') === 'production' || env('APP_ENV') === 'production') {
-            URL::forceScheme('https');
-        }
+    // Si l'URL contient "onrender.com", on force le HTTPS quoi qu'il arrive
+    if (str_contains(request()->getHost(), 'onrender.com')) {
+        URL::forceScheme('https');
     }
+}
 }
