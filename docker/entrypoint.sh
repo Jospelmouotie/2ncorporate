@@ -1,22 +1,16 @@
 #!/bin/sh
 
-# Création des dossiers nécessaires pour éviter les erreurs de permissions
-mkdir -p /var/www/storage/logs
-mkdir -p /var/www/storage/framework/sessions
-mkdir -p /var/www/storage/framework/views
-mkdir -p /var/www/storage/framework/cache
+echo "Nettoyage du cache..."
+# Supprime les fichiers de cache physique
+rm -f /var/www/bootstrap/cache/config.php
+php artisan config:clear
+php artisan cache:clear
 
-# Ajustement des permissions au démarrage
-chown -R www-data:www-data /var/www/storage
-chmod -R 775 /var/www/storage
-
-# Démarrer PHP-FPM
+echo "Lancement de PHP-FPM..."
 php-fpm -D
 
-echo "Lancement des migrations..."
-# On attend un peu que la DB soit prête si nécessaire
-php artisan config:clear
-php artisan migrate --force
+echo "Tentative de migration sur : $DB_CONNECTION"
+# Ici on force la migration
 php artisan migrate --force
 
 echo "Démarrage de Nginx..."

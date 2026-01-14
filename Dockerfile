@@ -13,19 +13,27 @@ WORKDIR /var/www
 
 # 5. Copier les fichiers du projet
 COPY . .
+# ... (après COPY . .)
+# Supprimer le fichier .env s'il existe dans le dossier pour forcer Render
+RUN rm -f .env
 
-# 6. Installer les dépendances PHP
+# S'assurer que les permissions sont totales sur le stockage
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# 6. Supprimer le fichier .env s'il a été copié par erreur
+# Cela force Laravel à utiliser les variables de Render
+RUN rm -f .env
+
+# 7. Installer les dépendances
 RUN composer install --no-dev --optimize-autoloader
 
-# 7. Donner les permissions aux dossiers de Laravel
-RUN chown -R www-data:www-data storage bootstrap/cache
+# 8. Permissions CRUCIALES pour www-data
+# On donne les droits sur TOUT le dossier pour éviter l'erreur laravel.log
+RUN chown -R www-data:www-data /var/www && chmod -R 775 /var/www/storage
 
-# 8. Copier notre config Nginx et notre script de démarrage
+# 9. Config Nginx et Entrypoint
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# 9. Exposer le port 80 pour Render
 EXPOSE 80
-
 ENTRYPOINT ["entrypoint.sh"]
