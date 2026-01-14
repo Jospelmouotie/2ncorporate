@@ -14,7 +14,7 @@ import NotFound from '@/Pages/NotFound.vue'
 
 // Pages admin
 import Dashboard from '../Components/Admin/Dashboard.vue'
-import ProductList from '@/Components/admin/Products/ProductList.vue'
+import ProductList from '@/Components/Admin/Products/ProductList.vue'
 import CategoryList from '@/Components/Admin/Categories/CategoryList.vue'
 import PromotionDashboard from '@/Components/Admin/Promotions/PromotionDashboard.vue'
 import AdvertisementDashboard from '@/Components/Admin/Advertisements/AdvertisementDashboard.vue'
