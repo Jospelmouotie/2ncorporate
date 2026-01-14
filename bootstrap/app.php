@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // Optionnel : Vous pourriez l'ajouter ici si TOUTES les routes
             // de ce groupe doivent être admin, mais c'est rarement le cas.
         ]);
+        $middleware->trustProxies(at: '*'); // Faire confiance au proxy de Render
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {
