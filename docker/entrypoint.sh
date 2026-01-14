@@ -1,10 +1,16 @@
 #!/bin/sh
 
-# Démarrer PHP
+# Démarrer PHP-FPM en arrière-plan
 php-fpm -D
 
-# Installer/Mettre à jour les dépendances si nécessaire (optionnel)
-# php artisan migrate --force
+# ATTENTION : On ajoute la ligne de migration ici
+# Elle s'exécutera automatiquement à chaque déploiement
+echo "Lancement des migrations..."
+php artisan migrate --force
 
-# Démarrer le serveur web Nginx
+# Optionnel : Si tu veux aussi ajouter tes produits de test (si tu as des Seeders)
+# php artisan db:seed --force
+
+# Lancer Nginx au premier plan
+echo "Démarrage de Nginx..."
 nginx -g "daemon off;"
