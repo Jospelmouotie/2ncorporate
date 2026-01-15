@@ -13,17 +13,22 @@ class ProductManagementController extends Controller
     /* ============================
       LISTE DES PRODUITS
     ============================ */
-  public function index()
-    {
-        $products = Product::with(['category', 'images'])
-            ->orderByDesc('created_at')
-            ->paginate(10);
+  public function index(Request $request)
+{
+    $query = Product::with(['category', 'images'])->orderByDesc('created_at');
 
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+    // Si une catégorie est passée en paramètre URL (?category_id=1)
+    if ($request->has('category_id')) {
+        $query->where('category_id', $request->category_id);
     }
+
+    $products = $query->paginate(10);
+
+    return response()->json([
+        'success' => true,
+        'data' => $products,
+    ]);
+}
 public function store(Request $request)
 {
     // 1. Validation rigoureuse

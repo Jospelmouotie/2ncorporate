@@ -1,39 +1,41 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-// On récupère la base URL du .env (http://localhost:8000/api par exemple)
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const useProductStore = defineStore('product', {
   state: () => ({
     products: [],
-    product: null,
+    pagination: null,
     loading: false,
-    error: null
+    currentCategoryId: null // On garde trace de la catégorie filtrée
   }),
 
   actions: {
-async fetchProducts(page = 1) {
+    async fetchProducts(page = 1, categoryId = null) {
       this.loading = true;
+      this.currentCategoryId = categoryId; // On stocke la catégorie actuelle
+
       try {
-        // On passe le numéro de la page à l'API Laravel
-        const res = await axios.get(`${API_BASE}/admin/products?page=${page}`);
+        // Construction de l'URL avec les paramètres page et category_id
+        let url = `${API_BASE}/admin/products?page=${page}`;
+        if (categoryId) {
+          url += `&category_id=${categoryId}`;
+        }
+
+        const res = await axios.get(url);
 
         if (res.data.success) {
-          // Structure Laravel Paginate : res.data.data contient l'objet complet de pagination
-          // res.data.data.data contient le tableau d'objets produits
-          this.products = res.data.data.data;
+          const paginatedData = res.data.data;
+          this.products = paginatedData.data; // Les 10 produits
           this.pagination = {
-            current_page: res.data.data.current_page,
-            last_page: res.data.data.last_page,
-            prev_page_url: res.data.data.prev_page_url,
-            next_page_url: res.data.data.next_page_url,
-            total: res.data.data.total
+            current_page: paginatedData.current_page,
+            last_page: paginatedData.last_page,
+            total: paginatedData.total
           };
         }
       } catch (err) {
-        console.error("Erreur de chargement :", err);
-        this.error = "Impossible de charger les produits";
+        console.error("Erreur chargement produits:", err);
       } finally {
         this.loading = false;
       }
