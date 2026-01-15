@@ -13,34 +13,40 @@ export const useProductStore = defineStore('product', {
   }),
 
   actions: {
-    async fetchProducts() {
-      this.loading = true
+async fetchProducts(page = 1) {
+      this.loading = true;
       try {
-        // Utilisation de la variable du .env
-        const res = await axios.get(`${API_BASE}/admin/products`)
+        // On passe le numéro de la page à l'API Laravel
+        const res = await axios.get(`${API_BASE}/admin/products?page=${page}`);
 
-        // Gestion de la structure de données Laravel Paginate
-        // On vérifie plusieurs niveaux pour être robuste
-        const responseData = res.data.data;
-        this.products = responseData?.data || responseData || []
+        if (res.data.success) {
+          // Structure Laravel Paginate : res.data.data contient l'objet complet de pagination
+          // res.data.data.data contient le tableau d'objets produits
+          this.products = res.data.data.data;
+          this.pagination = {
+            current_page: res.data.data.current_page,
+            last_page: res.data.data.last_page,
+            prev_page_url: res.data.data.prev_page_url,
+            next_page_url: res.data.data.next_page_url,
+            total: res.data.data.total
+          };
+        }
       } catch (err) {
-        console.error("Erreur de chargement :", err)
-        this.error = "Impossible de charger les produits"
+        console.error("Erreur de chargement :", err);
+        this.error = "Impossible de charger les produits";
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     async deleteProduct(id) {
       try {
-        await axios.delete(`${API_BASE}/admin/products/${id}`)
-
-        // Mise à jour réactive de l'interface
-        this.products = this.products.filter(p => p.id !== id)
-        return true
+        await axios.delete(`${API_BASE}/admin/products/${id}`);
+        // Refresh la page actuelle après suppression
+        await this.fetchProducts(this.pagination?.current_page || 1);
+        return true;
       } catch (err) {
-        console.error("Erreur suppression :", err)
-        throw new Error("Échec de la suppression")
+        throw new Error("Échec de la suppression");
       }
     },
 
