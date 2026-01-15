@@ -1,7 +1,20 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+/**
+ * SOLUTION AU PROBLÈME UNDEFINED :
+ * On récupère la variable VITE, mais si elle est absente (cas du build Render),
+ * on utilise window.location.origin pour construire l'URL dynamiquement.
+ */
+const getApiBase = () => {
+    if (import.meta.env.VITE_API_BASE_URL) {
+        return import.meta.env.VITE_API_BASE_URL;
+    }
+    // Fallback dynamique si la variable est indéfinie
+    return typeof window !== 'undefined' ? `${window.location.origin}/api` : '';
+};
+
+const API_BASE = getApiBase();
 
 export const useProductStore = defineStore('product', {
   state: () => ({
@@ -17,7 +30,6 @@ export const useProductStore = defineStore('product', {
       this.currentCategoryId = categoryId;
 
       try {
-        // Ajout des headers pour forcer la réponse JSON
         const config = {
           headers: {
             'Accept': 'application/json',
@@ -28,12 +40,12 @@ export const useProductStore = defineStore('product', {
           }
         };
 
-        // Si on a une catégorie, on l'ajoute aux paramètres
         if (categoryId) {
           config.params.category_id = categoryId;
         }
 
-        console.log(`Requête vers: ${API_BASE}/admin/products`, config.params);
+        // Log pour vérifier l'URL finale dans la console du navigateur
+        console.log(`📡 Tentative de connexion à : ${API_BASE}/admin/products`);
 
         const res = await axios.get(`${API_BASE}/admin/products`, config);
 
@@ -45,9 +57,10 @@ export const useProductStore = defineStore('product', {
             last_page: paginatedData.last_page,
             total: paginatedData.total
           };
+          console.log(`✅ ${this.products.length} produits chargés.`);
         }
       } catch (err) {
-        console.error("Erreur chargement produits:", err.response?.data || err.message);
+        console.error("❌ Erreur chargement produits:", err.response?.data || err.message);
       } finally {
         this.loading = false;
       }
@@ -58,7 +71,7 @@ export const useProductStore = defineStore('product', {
         await axios.delete(`${API_BASE}/admin/products/${id}`, {
           headers: { 'Accept': 'application/json' }
         });
-        // On rafraîchit avec le filtre actuel
+        // Rafraîchir avec les filtres actuels
         await this.fetchProducts(this.pagination?.current_page || 1, this.currentCategoryId);
         return true;
       } catch (err) {
