@@ -8,26 +8,38 @@ export const useProductStore = defineStore('product', {
     products: [],
     pagination: null,
     loading: false,
-    currentCategoryId: null // On garde trace de la catégorie filtrée
+    currentCategoryId: null
   }),
 
   actions: {
     async fetchProducts(page = 1, categoryId = null) {
       this.loading = true;
-      this.currentCategoryId = categoryId; // On stocke la catégorie actuelle
+      this.currentCategoryId = categoryId;
 
       try {
-        // Construction de l'URL avec les paramètres page et category_id
-        let url = `${API_BASE}/admin/products?page=${page}`;
+        // Ajout des headers pour forcer la réponse JSON
+        const config = {
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          params: {
+            page: page
+          }
+        };
+
+        // Si on a une catégorie, on l'ajoute aux paramètres
         if (categoryId) {
-          url += `&category_id=${categoryId}`;
+          config.params.category_id = categoryId;
         }
 
-        const res = await axios.get(url);
+        console.log(`Requête vers: ${API_BASE}/admin/products`, config.params);
+
+        const res = await axios.get(`${API_BASE}/admin/products`, config);
 
         if (res.data.success) {
           const paginatedData = res.data.data;
-          this.products = paginatedData.data; // Les 10 produits
+          this.products = paginatedData.data || [];
           this.pagination = {
             current_page: paginatedData.current_page,
             last_page: paginatedData.last_page,
@@ -35,7 +47,7 @@ export const useProductStore = defineStore('product', {
           };
         }
       } catch (err) {
-        console.error("Erreur chargement produits:", err);
+        console.error("Erreur chargement produits:", err.response?.data || err.message);
       } finally {
         this.loading = false;
       }
@@ -43,11 +55,14 @@ export const useProductStore = defineStore('product', {
 
     async deleteProduct(id) {
       try {
-        await axios.delete(`${API_BASE}/admin/products/${id}`);
-        // Refresh la page actuelle après suppression
-        await this.fetchProducts(this.pagination?.current_page || 1);
+        await axios.delete(`${API_BASE}/admin/products/${id}`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        // On rafraîchit avec le filtre actuel
+        await this.fetchProducts(this.pagination?.current_page || 1, this.currentCategoryId);
         return true;
       } catch (err) {
+        console.error("Erreur suppression:", err);
         throw new Error("Échec de la suppression");
       }
     },
@@ -55,17 +70,18 @@ export const useProductStore = defineStore('product', {
     async updateProduct(id, formData) {
       this.loading = true;
       try {
-        // Astuce Laravel : On simule un PUT via un POST pour supporter les fichiers (Multipart)
         if (formData instanceof FormData) {
           formData.append('_method', 'PUT');
         }
 
         const res = await axios.post(`${API_BASE}/admin/products/${id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json'
+          }
         });
 
-        // Rafraîchir la liste pour avoir les données à jour (image, prix, etc.)
-        await this.fetchProducts();
+        await this.fetchProducts(this.pagination?.current_page || 1, this.currentCategoryId);
         return res.data.data;
       } catch (err) {
         console.error("Erreur update :", err);

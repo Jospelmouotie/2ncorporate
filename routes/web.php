@@ -1,13 +1,11 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});// routes/web.php
+});
 
-
-// Cette route doit être à la toute fin du fichier
+// On ajoute une condition pour NE PAS capturer les routes API
 Route::get('/{any}', function () {
-    return view('welcome'); // ou le nom de votre blade principal
-})->where('any', '.*');
+    return view('welcome');
+})->where('any', '^(?!api).*$'); // Regex qui exclut 'api'

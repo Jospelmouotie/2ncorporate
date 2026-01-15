@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useProductStore } from '@/stores/productStore'
 import { useCategoryStore } from '@/stores/categoryStore'
 import ProductForm from './ProductForm.vue'
@@ -138,34 +138,52 @@ const selectedCategory = ref(null)
 const showForm = ref(false)
 const editingProduct = ref(null)
 
-// --- Chargement initial (Toutes catégories) ---
+// --- SECURITÉ: On s'assure que products est toujours un tableau ---
+const productsList = computed(() => {
+  return Array.isArray(productStore.products) ? productStore.products : []
+})
+
 onMounted(async () => {
-  await categoryStore.fetchCategories()
-  // On ne charge pas forcément les produits ici, on attend que l'user choisisse une catégorie
-  // Ou on charge tout par défaut :
-  await productStore.fetchProducts(1)
+  console.log("Démarrage du composant Admin...");
+  try {
+    // 1. Charger les catégories (essentiel pour l'affichage initial)
+    await categoryStore.fetchCategories()
+
+    // 2. Charger les produits initiaux
+    await productStore.fetchProducts(1)
+
+    console.log("Données initiales chargées avec succès");
+  } catch (error) {
+    console.error("Erreur critique au montage:", error)
+  }
 })
 
 // --- Navigation ---
 const selectCategory = async (cat) => {
+  if (!cat || !cat.id) return
+  console.log("Filtre sur catégorie ID:", cat.id)
   selectedCategory.value = cat
-  await productStore.fetchProducts(1, cat.id) // Charge la page 1 de la catégorie X
+  await productStore.fetchProducts(1, cat.id)
 }
 
-const backToCategories = () => {
+const backToCategories = async () => {
   selectedCategory.value = null
-  productStore.fetchProducts(1) // Optionnel : recharger tous les produits
+  // Optionnel: on recharge tous les produits sans filtre
+  await productStore.fetchProducts(1)
 }
 
 const changePage = async (page) => {
+  if (page < 1 || (productStore.pagination && page > productStore.pagination.last_page)) return
+
   window.scrollTo({ top: 0, behavior: 'smooth' })
-  // On passe l'id de la catégorie actuelle pour que Laravel filtre correctement la page suivante
+  // On maintient le filtre par catégorie s'il existe
   await productStore.fetchProducts(page, selectedCategory.value?.id)
 }
 
 // --- CRUD ---
 const refreshData = async () => {
-  await productStore.fetchProducts(productStore.pagination?.current_page || 1, selectedCategory.value?.id)
+  const currentPage = productStore.pagination?.current_page || 1
+  await productStore.fetchProducts(currentPage, selectedCategory.value?.id)
 }
 
 const openCreate = () => {
@@ -174,20 +192,26 @@ const openCreate = () => {
 }
 
 const openEdit = (product) => {
+  // On crée une copie pour éviter la mutation directe
   editingProduct.value = { ...product }
   showForm.value = true
 }
 
 const confirmDelete = async (id) => {
   if (confirm('Supprimer définitivement ce produit ?')) {
-    await productStore.deleteProduct(id)
-    await refreshData()
+    try {
+      await productStore.deleteProduct(id)
+      await refreshData()
+    } catch (error) {
+      alert("Erreur lors de la suppression")
+    }
   }
 }
 
-const formatPrice = (p) => new Intl.NumberFormat('fr-FR').format(p || 0)
+const formatPrice = (p) => {
+  return new Intl.NumberFormat('fr-FR').format(p || 0)
+}
 </script>
-
 <style scoped>
 /* Ajout d'une transition douce pour le survol des lignes */
 tr {
