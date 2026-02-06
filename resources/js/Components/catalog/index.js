@@ -1,0 +1,5 @@
+export { default as CatalogMenu } from './CatalogMenu.vue'
+export { default as FilterSidebar } from './FilterSidebar.vue'
+export { default as SearchBar } from './SearchBar.vue'
+export { default as SearchBarAutocomplete } from './SearchBarAutocomplete.vue'
+export { default as SortDropdown } from './SortDropdown.vue'
