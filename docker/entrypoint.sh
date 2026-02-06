@@ -17,7 +17,7 @@ php artisan view:clear
 echo "Lancement de PHP-FPM..."
 php-fpm -D
 
-# 4. Exécution des migrations
+# 4. Exécution des migration
 # On le fait avant Nginx pour que la base soit prête avant l'arrivée du trafic
 echo "Tentative de migration sur : $DB_CONNECTION"
 php artisan migrate --force
